@@ -65,7 +65,7 @@
     z-index:5;
   }
 
-  .content{ padding:0 18px 16px; }
+  .content{ padding:0 18px 90px; }
 
   .toolbar{
     display:flex;
@@ -81,7 +81,7 @@
     font-size:11px;
     letter-spacing:0.06em;
     text-transform:uppercase;
-    color:#4A4A4A;
+    color:var(--required);
     font-weight:700;
     margin-bottom:22px;
   }
@@ -354,10 +354,12 @@
 
   /* sticky submit bar */
   .submit-bar{
-    position:static;
-    background:transparent;
+    position:sticky;
+    bottom:0;
+    background:var(--paper);
     padding:16px 18px;
     margin:0 -18px;
+    z-index:6;
   }
   button.submit{
     display:block;
