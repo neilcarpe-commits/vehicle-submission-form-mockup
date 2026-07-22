@@ -176,6 +176,7 @@
   }
   .req{ color:var(--required); font-weight:700; display:inline-flex; align-items:center; }
   .req-icon{ width:8.5px; height:8.5px; fill:var(--required); display:inline-block; }
+  .req.done .req-icon{ width:11px; height:11px; }
   .ui-icon{ width:16px; height:16px; fill:currentColor; display:inline-block; flex:none; }
   .help{ font-size:12px; color:var(--muted); margin-top:6px; line-height:1.4; }
 
@@ -357,7 +358,9 @@
   .submit-bar{
     position:sticky;
     bottom:0;
-    background:var(--paper);
+    background:rgba(218,219,213,0.72);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
     padding:16px 18px;
     margin:0 -18px;
     z-index:6;
@@ -432,6 +435,9 @@
   </symbol>
   <symbol id="icon-check" viewBox="0 0 256 256">
     <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/>
+  </symbol>
+  <symbol id="icon-check-thick" viewBox="0 0 256 256">
+    <path d="M50 130 L104 184 L206 66" fill="none" stroke="#B4DBE7" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
   </symbol>
   <symbol id="pcarmarket-logo" viewBox="0 0 570.76 348.28">
     <rect fill="#fff" y="217.1" width="570.76" height="131.19"/>
@@ -817,6 +823,39 @@ function enhanceSelect(select){
 }
 
 document.querySelectorAll('select').forEach(enhanceSelect);
+
+function setupRequiredChecks(){
+  document.querySelectorAll('.field').forEach(field => {
+    const reqSpan = field.querySelector('label .req');
+    if(!reqSpan) return;
+    const control = field.querySelector('input, select, textarea');
+    if(!control) return;
+    const use = reqSpan.querySelector('use');
+    const evt = (control.tagName === 'SELECT') ? 'change' : 'input';
+    const update = () => {
+      const complete = !!(control.value && control.value.trim() !== '');
+      reqSpan.classList.toggle('done', complete);
+      use.setAttribute('href', complete ? '#icon-check-thick' : '#fuchs-mark');
+    };
+    control.addEventListener(evt, update);
+    update();
+  });
+
+  document.querySelectorAll('.consent-box').forEach(box => {
+    const reqSpan = box.querySelector('.req');
+    if(!reqSpan) return;
+    const checkbox = box.querySelector('input[type=checkbox]');
+    if(!checkbox) return;
+    const use = reqSpan.querySelector('use');
+    const update = () => {
+      reqSpan.classList.toggle('done', checkbox.checked);
+      use.setAttribute('href', checkbox.checked ? '#icon-check-thick' : '#fuchs-mark');
+    };
+    checkbox.addEventListener('change', update);
+    update();
+  });
+}
+setupRequiredChecks();
 </script>
 
 </body>
