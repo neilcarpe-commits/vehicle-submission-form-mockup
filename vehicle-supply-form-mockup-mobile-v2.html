@@ -126,23 +126,30 @@
   }
   .banner b{ color:var(--green); }
 
+  .sticky-header{
+    position:sticky;
+    top:44px;
+    z-index:4;
+    margin:0 -18px 22px;
+    background:linear-gradient(rgba(74,74,74,0.94) 0, rgba(74,74,74,0.94) 24px, rgba(0,0,0,0.94) 24px, rgba(0,0,0,0.94) 100%);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+  }
   h1.page-title{
     font-family:'DM Sans', sans-serif;
     font-weight:600;
     font-size:19px;
     letter-spacing:-0.01em;
-    margin:0 -18px 0;
+    margin:0;
     padding:64px 18px 2px;
     text-transform:uppercase;
-    background:linear-gradient(#4A4A4A 0, #4A4A4A 24px, #000 24px, #000 100%);
     color:#fff;
   }
   .subtitle{
     color:rgba(255,255,255,0.65);
     font-size:13px;
-    margin:0 -18px 22px;
+    margin:0;
     padding:0 18px 36px;
-    background:#000;
     line-height:1.4;
   }
 
@@ -461,8 +468,10 @@
     <div class="statusbar"><span>9:41</span><span>●●●●&nbsp; 5G &nbsp;🔋</span></div>
 
     <div class="content">
-      <h1 class="page-title">Submit Your Vehicle</h1>
-      <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
+      <div class="sticky-header">
+        <h1 class="page-title">Submit Your Vehicle</h1>
+        <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
+      </div>
 
       <h2 class="section-title">Vehicle Information</h2>
 
