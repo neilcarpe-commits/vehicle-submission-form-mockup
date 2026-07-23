@@ -234,7 +234,7 @@
   .type-toggle .off{ background:#fff; color:var(--ink); border-left:1px solid var(--line-strong);}
 
   section.block{ margin-top:16px; margin-bottom:16px; }
-  h2.section-title{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; margin:0 0 4px; text-transform:uppercase; }
+  h2.section-title{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; margin:0 0 14px; text-transform:uppercase; }
   .step-num{
     display:inline-flex;
     align-items:center;
@@ -277,6 +277,41 @@
   }
   .vin-hint.show{ display:flex; }
   .vin-hint .ui-icon{ width:14px; height:14px; flex:none; margin-top:1px; }
+
+  .vin-input-row{ display:flex; gap:8px; align-items:stretch; }
+  .vin-input-row input{ flex:1; min-width:0; }
+  .vin-scan-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:none;
+    width:46px;
+    border-radius:1px;
+    background:rgba(180, 219, 231, 0.25);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .vin-scan-btn:hover{ outline:2px solid #B4DBE7; outline-offset:1px; }
+  .vin-scan-btn input[type=file]{ display:none; }
+  .vin-scan-btn .ui-icon{ width:19px; height:19px; }
+  .vin-scan-status{
+    display:none;
+    align-items:center;
+    gap:7px;
+    font-size:12px;
+    line-height:1.4;
+    color:var(--muted);
+    margin-top:8px;
+  }
+  .vin-scan-status.show{ display:flex; }
+  .vin-scan-status .spinner{
+    width:12px; height:12px; flex:none;
+    border-radius:50%;
+    border:2px solid rgba(18,32,26,0.15);
+    border-top-color:var(--green);
+    animation:vin-scan-spin .7s linear infinite;
+  }
+  @keyframes vin-scan-spin{ to{ transform:rotate(360deg); } }
 
   input[type=text], input[type=tel], input[type=email], input[type=number], select, textarea{
     width:100%;
@@ -687,7 +722,18 @@
       <section class="block">
         <div class="field">
           <label>VIN <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <input type="text" id="vin-input" placeholder="Enter full VIN">
+          <div class="vin-input-row">
+            <input type="text" id="vin-input" placeholder="Enter full VIN">
+            <label class="vin-scan-btn" title="Scan VIN with camera">
+              <svg class="ui-icon"><use href="#icon-camera"/></svg>
+              <input type="file" accept="image/*" capture="environment" id="vin-scan-input" onchange="handleVinScan(this.files); this.value='';">
+            </label>
+          </div>
+          <div class="help">Can't find it? Snap a photo of the VIN plate or door sticker and we'll read it for you.</div>
+          <div class="vin-scan-status" id="vin-scan-status">
+            <span class="spinner"></span>
+            <span>Reading VIN from photo…</span>
+          </div>
           <div class="vin-hint" id="vin-hint">
             <svg class="ui-icon"><use href="#icon-check"/></svg>
             <span>The following fields are auto-filled from the VIN. If necessary, edit them below.</span>
@@ -1304,6 +1350,28 @@ function setSelectValueByText(select, text){
   if(select._refreshCustomOptions) select._refreshCustomOptions();
   select.dispatchEvent(new Event('change', { bubbles: true }));
   return true;
+}
+
+/* VIN photo scan: this is a mockup stand-in for on-device OCR. Selecting a
+   photo (via the camera or library) simulates a brief "reading" delay, then
+   fills the VIN field with a sample VIN and dispatches the same input event
+   the decode pipeline above already listens for, so make/year/model still
+   populate exactly as if the VIN had been typed. */
+const VIN_SCAN_SAMPLES = ['WP0AA2A9XKS123456','WBA3B1C50FK123456','1G1YY26U785123456'];
+let vinScanTimer = null;
+function handleVinScan(files){
+  if(!files || !files.length) return;
+  const vinInput = document.getElementById('vin-input');
+  const status = document.getElementById('vin-scan-status');
+  if(!vinInput) return;
+  if(status) status.classList.add('show');
+  clearTimeout(vinScanTimer);
+  vinScanTimer = setTimeout(() => {
+    const scanned = VIN_SCAN_SAMPLES[Math.floor(Math.random() * VIN_SCAN_SAMPLES.length)];
+    vinInput.value = scanned;
+    vinInput.dispatchEvent(new Event('input', { bubbles: true }));
+    if(status) status.classList.remove('show');
+  }, 900);
 }
 
 (function setupVinDecode(){
