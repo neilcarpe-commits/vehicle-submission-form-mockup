@@ -156,14 +156,31 @@
     color:#fff;
   }
   .page-title .title-text{ display:block; }
+  .page-title.scrolled .title-text{ display:none; }
   .progress-label{
-    display:block;
-    margin-top:4px;
-    font-size:12.5px;
-    font-weight:500;
-    letter-spacing:0.03em;
-    text-transform:none;
-    color:rgba(255,255,255,0.55);
+    display:none;
+    align-items:center;
+    gap:8px;
+  }
+  .page-title.scrolled .progress-label{ display:flex; }
+  .progress-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:20px; height:20px;
+    flex:none;
+    border-radius:1px;
+    background:#fff;
+    color:#000;
+    font-size:11px;
+    font-weight:700;
+  }
+  .progress-text{
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    color:#fff;
   }
   /* Slim progress bar: rendered in normal flow just under the "Fields
      marked..." box until that box scrolls out from under the sticky header,
@@ -217,6 +234,20 @@
 
   section.block{ margin-top:16px; margin-bottom:16px; }
   h2.section-title{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; margin:0 0 4px; text-transform:uppercase; }
+  .step-num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px; height:22px;
+    flex:none;
+    border-radius:1px;
+    background:#fff;
+    color:#000;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0;
+    text-transform:none;
+  }
   .section-sub{ font-size:12.5px; color:var(--muted); margin-bottom:14px; line-height:1.4; }
 
   .field{ margin-bottom:16px; }
@@ -453,7 +484,28 @@
     margin-bottom:16px;
     background:rgba(180, 219, 231, 0.25);
   }
-  .consent-box input{ width:18px; height:18px; margin-top:2px; accent-color:var(--green); flex:none; }
+  .consent-box input{
+    appearance:none;
+    -webkit-appearance:none;
+    width:18px; height:18px;
+    margin-top:2px;
+    flex:none;
+    background:#fff;
+    border:none;
+    border-radius:0;
+    cursor:pointer;
+    position:relative;
+  }
+  .consent-box input:checked{ background:var(--green); }
+  .consent-box input:checked::after{
+    content:'';
+    position:absolute;
+    left:5px; top:2px;
+    width:5px; height:9px;
+    border:solid #fff;
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
   .consent-box .ctext{ font-size:12.5px; line-height:1.5; color:var(--ink); }
   .consent-box a{ color:var(--green); }
 
@@ -537,7 +589,7 @@
   .sheet .primary{ background:#B4DBE7; color:var(--ink); }
   .sheet .primary:hover{ background:#fff; color:var(--ink); }
   .sheet .secondary{ background:#EEEFEB; color:var(--ink); border:none; }
-  .sheet .secondary:hover{ background:#fff; color:var(--ink); }
+  .sheet .secondary:hover{ background:#2A2A2A; color:#fff; }
 </style>
 </head>
 <body>
@@ -599,16 +651,19 @@
     <div class="statusbar"><span>9:41</span><span>●●●●&nbsp; 5G &nbsp;🔋</span></div>
 
     <div class="content">
-      <h1 class="page-title">
+      <h1 class="page-title" id="page-title">
         <span class="title-text">Submit Your Vehicle</span>
-        <span class="progress-label" id="progress-label">Step 1 of 6 — Vehicle Information</span>
+        <span class="progress-label" id="progress-label">
+          <span class="progress-num" id="progress-num">1</span>
+          <span class="progress-text" id="progress-text">Vehicle Information</span>
+        </span>
       </h1>
       <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
       <div class="form-progress-wrap" id="form-progress-wrap">
         <div class="form-progress-track"><div class="form-progress-fill" id="form-progress-fill"></div></div>
       </div>
 
-      <h2 class="section-title" id="step-vehicle-info">Vehicle Information</h2>
+      <h2 class="section-title" id="step-vehicle-info"><span class="step-num">1</span> Vehicle Information</h2>
 
       <div class="draft-banner" id="draft-banner">
         <svg class="ui-icon"><use href="#icon-check"/></svg>
@@ -697,7 +752,7 @@
 
       <!-- PHOTOS: capture on device OR upload -->
       <section class="block">
-        <h2 class="section-title" id="step-photos">Photos <span class="tag new">Take photos in‑app</span></h2>
+        <h2 class="section-title" id="step-photos"><span class="step-num">2</span> Photos <span class="tag new">Take photos in‑app</span></h2>
         <div class="section-sub">Snap photos right now with your camera, or upload from your library. High-quality photos help attract more bidders.</div>
 
         <div class="photo-actions">
@@ -723,7 +778,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title" id="step-location">Location</h2>
+        <h2 class="section-title" id="step-location"><span class="step-num">3</span> Location</h2>
         <div class="field">
           <label>ZIP Code <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
           <input type="text" id="zip-input" placeholder="Enter ZIP code">
@@ -735,7 +790,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title" id="step-auction">Auction Details <span class="tag new">Updated</span></h2>
+        <h2 class="section-title" id="step-auction"><span class="step-num">4</span> Auction Details <span class="tag new">Updated</span></h2>
         <div class="field">
           <label>Price Expectation (US$)</label>
           <div class="prefix-input">
@@ -747,7 +802,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title" id="step-contact">Contact Information</h2>
+        <h2 class="section-title" id="step-contact"><span class="step-num">5</span> Contact Information</h2>
 
         <div id="contact-block">
           <div class="section-sub" id="contact-sub-text">Since you're not logged in, we just need a way to reach you. <span class="tag new">New</span></div>
@@ -788,7 +843,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title" id="step-consent">Review &amp; Submit</h2>
+        <h2 class="section-title" id="step-consent"><span class="step-num">6</span> Review &amp; Submit</h2>
         <div class="consent-box">
           <input type="checkbox" id="consent-terms">
           <div class="ctext">I agree to the <a>terms and conditions</a> and the <a>seller agreement</a>. <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></div>
@@ -1096,10 +1151,12 @@ const FORM_STEPS = [
   const scrollArea = document.getElementById('scroll-area');
   const fill = document.getElementById('form-progress-fill');
   const label = document.getElementById('progress-label');
+  const progressNum = document.getElementById('progress-num');
+  const progressText = document.getElementById('progress-text');
   const header = document.querySelector('h1.page-title');
   const subtitle = document.querySelector('.subtitle');
   const progressWrap = document.getElementById('form-progress-wrap');
-  if(!scrollArea || !fill || !label || !header || !subtitle || !progressWrap) return;
+  if(!scrollArea || !fill || !label || !progressNum || !progressText || !header || !subtitle || !progressWrap) return;
 
   const steps = FORM_STEPS
     .map(s => ({ ...s, el: document.getElementById(s.id) }))
@@ -1129,7 +1186,13 @@ const FORM_STEPS = [
     steps.forEach((step, i) => {
       if(step.el.getBoundingClientRect().top <= headerBottom + 20) activeIndex = i;
     });
-    label.textContent = `Step ${activeIndex + 1} of ${steps.length} — ${steps[activeIndex].label}`;
+    progressNum.textContent = activeIndex + 1;
+    progressText.textContent = steps[activeIndex].label;
+
+    // Before the user starts scrolling, the header shows "Submit Your
+    // Vehicle"; once they scroll at all, it swaps to the numbered section
+    // indicator instead.
+    header.classList.toggle('scrolled', scrollArea.scrollTop > 0);
 
     // Dock the bar onto the header once the "Fields marked..." box has
     // scrolled out from under the sticky header; undock (return it to sitting
