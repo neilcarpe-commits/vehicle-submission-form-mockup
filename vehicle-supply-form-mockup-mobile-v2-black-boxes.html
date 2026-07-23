@@ -495,12 +495,12 @@
       <section class="block">
         <div class="field">
           <label>VIN <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <input type="text" placeholder="Enter full VIN">
+          <input type="text" id="vin-input" placeholder="Enter full VIN">
         </div>
 
         <div class="field">
           <label>Make <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <select id="make-select" onchange="toggleMakeOther(this.value)">
+          <select id="make-select" onchange="onMakeChange(this.value)">
             <option value="">Select make…</option>
             <optgroup label="Most popular">
               <option>Porsche</option><option>BMW</option><option>Mercedes-Benz</option>
@@ -520,7 +520,7 @@
 
         <div class="field">
           <label>Year <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <select onchange="toggleYearOther(this.value)">
+          <select id="year-select" onchange="toggleYearOther(this.value)">
             <option value="">Select year…</option>
             <option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option><option>2015</option><option>2014</option><option>2013</option><option>2012</option><option>2011</option><option>2010</option><option>2009</option><option>2008</option><option>2007</option><option>2006</option><option>2005</option><option>2004</option><option>2003</option><option>2002</option><option>2001</option><option>2000</option><option>1999</option><option>1998</option><option>1997</option><option>1996</option><option>1995</option><option>1994</option><option>1993</option><option>1992</option><option>1991</option><option>1990</option><option>1989</option><option>1988</option><option>1987</option><option>1986</option><option>1985</option><option>1984</option><option>1983</option><option>1982</option><option>1981</option><option>1980</option><option>1979</option><option>1978</option><option>1977</option><option>1976</option><option>1975</option><option>1974</option><option>1973</option><option>1972</option><option>1971</option><option>1970</option><option>1969</option><option>1968</option><option>1967</option><option>1966</option><option>1965</option><option>1964</option><option>1963</option><option>1962</option><option>1961</option><option>1960</option><option>1959</option><option>1958</option><option>1957</option><option>1956</option><option>1955</option><option>1954</option><option>1953</option><option>1952</option><option>1951</option><option>1950</option>
             <option value="other">Other — please specify</option>
@@ -530,13 +530,8 @@
 
         <div class="field">
           <label>Model <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <select onchange="toggleModelOther(this.value)">
+          <select id="model-select" onchange="toggleModelOther(this.value)">
             <option value="">Select model…</option>
-            <option>911 Cabriolet</option><option>911 Carrera</option><option>911 Carrera 4</option>
-            <option>911 Carrera 4 Cabriolet</option><option>911 Carrera 4S</option>
-            <option>911 Carrera 4S Cabriolet</option><option>911 Carrera S</option>
-            <option>911 Carrera S Cabriolet</option><option>911 GT3</option><option>911 GT3 RS</option>
-            <option>911 Targa</option><option>911 Turbo</option><option>911 Turbo S</option>
             <option value="other">Other — please specify</option>
           </select>
           <input type="text" id="model-other-input" placeholder="Type the model…" style="display:none; margin-top:10px;">
@@ -808,20 +803,27 @@ function enhanceSelect(select){
     return row;
   }
 
-  Array.from(select.children).forEach(child => {
-    if(child.tagName === 'OPTGROUP'){
-      const label = document.createElement('div');
-      label.className = 'custom-select-optgroup-label';
-      label.textContent = child.label;
-      panel.appendChild(label);
-      Array.from(child.children).forEach(opt => panel.appendChild(buildOptionRow(opt)));
-    } else if(child.tagName === 'OPTION'){
-      panel.appendChild(buildOptionRow(child));
-    }
-  });
+  function populateOptions(){
+    panel.innerHTML = '';
+    Array.from(select.children).forEach(child => {
+      if(child.tagName === 'OPTGROUP'){
+        const label = document.createElement('div');
+        label.className = 'custom-select-optgroup-label';
+        label.textContent = child.label;
+        panel.appendChild(label);
+        Array.from(child.children).forEach(opt => panel.appendChild(buildOptionRow(opt)));
+      } else if(child.tagName === 'OPTION'){
+        panel.appendChild(buildOptionRow(child));
+      }
+    });
+    const selectedOption = select.options[select.selectedIndex];
+    triggerLabel.textContent = selectedOption ? selectedOption.textContent : '';
+  }
 
-  const selectedOption = select.options[select.selectedIndex];
-  triggerLabel.textContent = selectedOption ? selectedOption.textContent : '';
+  populateOptions();
+  /* exposed so code that rewrites this select's <option> list (e.g. Make-driven
+     Model repopulation, VIN auto-fill) can refresh the custom dropdown UI */
+  select._refreshCustomOptions = populateOptions;
 
   trigger.addEventListener('click', () => {
     if(wrapper.classList.contains('open')) closePanel(); else openPanel();
@@ -868,6 +870,128 @@ function setupRequiredChecks(){
   });
 }
 setupRequiredChecks();
+
+/* MAKE → MODEL LISTS: keeps the Model dropdown relevant to whichever Make
+   is selected (or auto-detected from a VIN) instead of always showing
+   Porsche models. */
+const MODELS_BY_MAKE = {
+  'Porsche': ['911 Carrera','911 Carrera S','911 Carrera 4','911 Carrera 4S','911 Turbo','911 Turbo S','911 GT3','911 GT3 RS','911 Targa','718 Boxster','718 Cayman','Cayenne','Macan','Panamera','Taycan','356','914','924','928','944','968'],
+  'BMW': ['2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','8 Series','M2','M3','M4','M5','X1','X3','X5','X6','Z3','Z4','i4','iX'],
+  'Mercedes-Benz': ['A-Class','C-Class','E-Class','S-Class','CLA','CLS','G-Class','GLC','GLE','GLS','SL','SLC','AMG GT','300SL'],
+  'Chevrolet': ['Corvette','Camaro','Chevelle','Bel Air','Impala','El Camino','Blazer','Silverado','Tahoe'],
+  'Ferrari': ['250','308','328','348','355','360','430','458','488','812','California','Portofino','Roma','Testarossa','Enzo','F40','F50'],
+  'Alfa Romeo': ['Giulia','Giulietta','Spider','GTV','4C','Stelvio'],
+  'Aston Martin': ['DB5','DB9','DB11','Vantage','Vanquish','DBS'],
+  'Audi': ['A3','A4','A6','A8','Q3','Q5','Q7','TT','R8','RS6','S4'],
+  'Bentley': ['Continental GT','Flying Spur','Mulsanne','Bentayga','Azure'],
+  'Cadillac': ['CTS','ATS','Eldorado','DeVille','Escalade','XTS'],
+  'Fiat': ['500','124 Spider','Spider 2000','X1/9'],
+  'Ford': ['Mustang','F-150','Bronco','GT','Thunderbird','Falcon','Fairlane'],
+  'Jaguar': ['E-Type','XK','XJ','F-Type','XF','XE'],
+  'Lamborghini': ['Huracán','Aventador','Gallardo','Murciélago','Countach','Diablo'],
+  'Land Rover': ['Defender','Range Rover','Discovery','Range Rover Sport'],
+  'Maserati': ['Ghibli','Quattroporte','GranTurismo','Levante','MC20'],
+  'Mini': ['Cooper','Cooper S','Countryman','Clubman'],
+  'Nissan': ['300ZX','350Z','370Z','GT-R','Skyline','Z'],
+  'Toyota': ['Supra','Land Cruiser','MR2','Celica','Corolla'],
+  'Volkswagen': ['Beetle','Golf GTI','Karmann Ghia','Vanagon','Jetta']
+};
+
+function populateModelOptions(make){
+  const select = document.getElementById('model-select');
+  if(!select) return;
+  const models = MODELS_BY_MAKE[make] || [];
+  let html = '<option value="">Select model…</option>';
+  models.forEach(m => { html += `<option>${m}</option>`; });
+  html += '<option value="other">Other — please specify</option>';
+  select.innerHTML = html;
+  select.value = '';
+  if(select._refreshCustomOptions) select._refreshCustomOptions();
+  const otherInput = document.getElementById('model-other-input');
+  if(otherInput){ otherInput.style.display = 'none'; otherInput.value = ''; }
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function onMakeChange(value){
+  toggleMakeOther(value);
+  populateModelOptions(value);
+}
+
+/* Initialize the Model dropdown to match whatever Make is selected on load
+   (empty by default, since no Make is selected yet). */
+populateModelOptions(document.getElementById('make-select') ? document.getElementById('make-select').value : '');
+
+/* VIN AUTO-DECODE (demo simulation): once a full 17-character VIN is typed,
+   auto-fills Make (from the real-world WMI manufacturer prefix) and Year
+   (from the standard VIN model-year code in position 10), then picks a
+   representative Model for that Make. This mirrors how real VIN decoders
+   work, though the Model pick here is illustrative rather than a true
+   character-accurate decode. */
+const WMI_MAKE_MAP = {
+  'WP0':'Porsche','WP1':'Porsche',
+  'WBA':'BMW','WBS':'BMW','WBY':'BMW',
+  'WDB':'Mercedes-Benz','WDD':'Mercedes-Benz','WDC':'Mercedes-Benz',
+  'ZFF':'Ferrari',
+  '1G1':'Chevrolet','1G6':'Cadillac',
+  'WAU':'Audi',
+  'WVW':'Volkswagen','WV1':'Volkswagen','WV2':'Volkswagen',
+  'SCF':'Aston Martin',
+  'SAJ':'Jaguar',
+  'ZHW':'Lamborghini',
+  'ZAM':'Maserati',
+  'SCB':'Bentley',
+  'JN1':'Nissan','JN6':'Nissan',
+  'JT2':'Toyota','JT3':'Toyota','4T1':'Toyota'
+};
+const YEAR_CODES_PRE2010 = {A:1980,B:1981,C:1982,D:1983,E:1984,F:1985,G:1986,H:1987,J:1988,K:1989,L:1990,M:1991,N:1992,P:1993,R:1994,S:1995,T:1996,V:1997,W:1998,X:1999,Y:2000,'1':2001,'2':2002,'3':2003,'4':2004,'5':2005,'6':2006,'7':2007,'8':2008,'9':2009};
+const YEAR_CODES_2010PLUS = {A:2010,B:2011,C:2012,D:2013,E:2014,F:2015,G:2016,H:2017,J:2018,K:2019,L:2020,M:2021,N:2022,P:2023,R:2024,S:2025,T:2026,V:2027,W:2028,X:2029,Y:2030,'1':2031,'2':2032,'3':2033,'4':2034,'5':2035,'6':2036,'7':2037,'8':2038,'9':2039};
+
+function decodeVIN(vinRaw){
+  const vin = vinRaw.toUpperCase();
+  const wmi = vin.substring(0,3);
+  const yearChar = vin.charAt(9);
+  const posSeven = vin.charAt(6);
+  const yearMap = /[0-9]/.test(posSeven) ? YEAR_CODES_PRE2010 : YEAR_CODES_2010PLUS;
+  return { make: WMI_MAKE_MAP[wmi], year: yearMap[yearChar] };
+}
+
+function setSelectValueByText(select, text){
+  if(!select) return false;
+  const match = Array.from(select.options).find(o => o.value === text || o.textContent === String(text));
+  if(!match) return false;
+  select.value = match.value;
+  if(select._refreshCustomOptions) select._refreshCustomOptions();
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+  return true;
+}
+
+(function setupVinDecode(){
+  const vinInput = document.getElementById('vin-input');
+  if(!vinInput) return;
+  let lastDecoded = '';
+  vinInput.addEventListener('input', () => {
+    const vin = vinInput.value.trim();
+    if(vin.length !== 17 || vin === lastDecoded) return;
+    lastDecoded = vin;
+    const decoded = decodeVIN(vin);
+
+    if(decoded.make){
+      const makeSelect = document.getElementById('make-select');
+      if(setSelectValueByText(makeSelect, decoded.make)){
+        populateModelOptions(decoded.make);
+        const modelSelect = document.getElementById('model-select');
+        if(modelSelect && modelSelect.options.length > 1){
+          modelSelect.selectedIndex = 1;
+          if(modelSelect._refreshCustomOptions) modelSelect._refreshCustomOptions();
+          modelSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    }
+    if(decoded.year){
+      setSelectValueByText(document.getElementById('year-select'), decoded.year);
+    }
+  });
+})();
 </script>
 
 </body>
