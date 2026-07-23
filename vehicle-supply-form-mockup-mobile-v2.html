@@ -131,17 +131,36 @@
     font-weight:600;
     font-size:15px;
     letter-spacing:0.02em;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
     position:sticky;
     top:44px;
     z-index:4;
     margin:0 -18px 0;
-    padding:14px 18px;
+    padding:14px 18px 17px;
     text-transform:uppercase;
     background:#000;
     color:#fff;
+  }
+  .page-title .title-text{ display:block; }
+  .progress-label{
+    display:block;
+    margin-top:4px;
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.03em;
+    text-transform:none;
+    color:rgba(255,255,255,0.55);
+  }
+  .form-progress-track{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:3px;
+    background:rgba(255,255,255,0.15);
+  }
+  .form-progress-fill{
+    height:100%;
+    width:0%;
+    background:#B4DBE7;
+    transition:width .2s ease;
   }
   .subtitle{
     color:rgba(255,255,255,0.65);
@@ -526,10 +545,12 @@
     <div class="content">
       <h1 class="page-title">
         <span class="title-text">Submit Your Vehicle</span>
+        <span class="progress-label" id="progress-label">Step 1 of 6 — Vehicle Information</span>
+        <div class="form-progress-track"><div class="form-progress-fill" id="form-progress-fill"></div></div>
       </h1>
       <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
 
-      <h2 class="section-title">Vehicle Information</h2>
+      <h2 class="section-title" id="step-vehicle-info">Vehicle Information</h2>
 
       <span class="toolbar-label">Demo view</span>
       <div class="toolbar">
@@ -613,7 +634,7 @@
 
       <!-- PHOTOS: capture on device OR upload -->
       <section class="block">
-        <h2 class="section-title">Photos <span class="tag new">Take photos in‑app</span></h2>
+        <h2 class="section-title" id="step-photos">Photos <span class="tag new">Take photos in‑app</span></h2>
         <div class="section-sub">Snap photos right now with your camera, or upload from your library. High-quality photos help attract more bidders.</div>
 
         <div class="photo-actions">
@@ -639,7 +660,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title">Location</h2>
+        <h2 class="section-title" id="step-location">Location</h2>
         <div class="field">
           <label>ZIP Code <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
           <input type="text" placeholder="Enter ZIP code">
@@ -651,7 +672,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title">Auction Details <span class="tag new">Updated</span></h2>
+        <h2 class="section-title" id="step-auction">Auction Details <span class="tag new">Updated</span></h2>
         <div class="field">
           <label>Price Expectation (US$)</label>
           <div class="prefix-input">
@@ -663,7 +684,7 @@
       </section>
 
       <section class="block">
-        <h2 class="section-title">Contact Information</h2>
+        <h2 class="section-title" id="step-contact">Contact Information</h2>
 
         <div id="contact-block">
           <div class="section-sub" id="contact-sub-text">Since you're not logged in, we just need a way to reach you. <span class="tag new">New</span></div>
@@ -704,6 +725,7 @@
       </section>
 
       <section class="block">
+        <h2 class="section-title" id="step-consent">Review &amp; Submit</h2>
         <div class="consent-box">
           <input type="checkbox">
           <div class="ctext">I agree to the <a>terms and conditions</a> and the <a>seller agreement</a>. <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></div>
@@ -990,6 +1012,53 @@ function setupRequiredChecks(){
   });
 }
 setupRequiredChecks();
+
+/* FORM PROGRESS: a slim fill bar in the sticky header tracks overall scroll
+   depth through the form, and a small label under the title names which of
+   the six sections is currently in view — so a long single-scroll mobile
+   form still gives a sense of "how much is left" instead of feeling endless. */
+const FORM_STEPS = [
+  { id: 'step-vehicle-info', label: 'Vehicle Information' },
+  { id: 'step-photos', label: 'Photos' },
+  { id: 'step-location', label: 'Location' },
+  { id: 'step-auction', label: 'Auction Details' },
+  { id: 'step-contact', label: 'Contact Information' },
+  { id: 'step-consent', label: 'Review & Submit' }
+];
+
+(function setupFormProgress(){
+  const scrollArea = document.getElementById('scroll-area');
+  const fill = document.getElementById('form-progress-fill');
+  const label = document.getElementById('progress-label');
+  const header = document.querySelector('h1.page-title');
+  if(!scrollArea || !fill || !label || !header) return;
+
+  const steps = FORM_STEPS
+    .map(s => ({ ...s, el: document.getElementById(s.id) }))
+    .filter(s => s.el);
+  if(!steps.length) return;
+
+  let ticking = false;
+  function update(){
+    ticking = false;
+
+    const maxScroll = scrollArea.scrollHeight - scrollArea.clientHeight;
+    const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (scrollArea.scrollTop / maxScroll) * 100)) : 0;
+    fill.style.width = pct + '%';
+
+    const headerBottom = header.getBoundingClientRect().bottom;
+    let activeIndex = 0;
+    steps.forEach((step, i) => {
+      if(step.el.getBoundingClientRect().top <= headerBottom + 20) activeIndex = i;
+    });
+    label.textContent = `Step ${activeIndex + 1} of ${steps.length} — ${steps[activeIndex].label}`;
+  }
+
+  scrollArea.addEventListener('scroll', () => {
+    if(!ticking){ requestAnimationFrame(update); ticking = true; }
+  });
+  update();
+})();
 
 /* MAKE → MODEL LISTS: keeps the Model dropdown relevant to whichever Make
    is selected (or auto-detected from a VIN) instead of always showing
