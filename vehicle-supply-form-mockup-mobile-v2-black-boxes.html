@@ -186,6 +186,21 @@
   .ui-icon{ width:16px; height:16px; fill:currentColor; display:inline-block; flex:none; }
   .help{ font-size:12px; color:var(--muted); margin-top:6px; line-height:1.4; }
 
+  .vin-hint{
+    display:none;
+    align-items:flex-start;
+    gap:7px;
+    font-size:12px;
+    line-height:1.4;
+    color:var(--green);
+    margin-top:8px;
+    padding:9px 10px;
+    border-radius:1px;
+    background:rgba(180, 219, 231, 0.25);
+  }
+  .vin-hint.show{ display:flex; }
+  .vin-hint .ui-icon{ width:14px; height:14px; flex:none; margin-top:1px; }
+
   input[type=text], input[type=tel], input[type=email], input[type=number], select, textarea{
     width:100%;
     border:none;
@@ -289,6 +304,44 @@
   }
   .prefix-input input:focus, .prefix-input input:hover{ outline:none; }
   .prefix-input:focus-within, .prefix-input:hover{ outline:2px solid #B4DBE7; outline-offset:1px; }
+
+  .suffix-input{
+    display:flex;
+    align-items:center;
+    border:none;
+    border-radius:1px;
+    background:#F8F9F6;
+    overflow:hidden;
+  }
+  .suffix-input input{
+    border:none;
+    background:transparent;
+    flex:1;
+    min-width:0;
+    padding:13px 4px 13px 12px;
+  }
+  .suffix-input input:focus, .suffix-input input:hover{ outline:none; }
+  .suffix-input:focus-within, .suffix-input:hover{ outline:2px solid #B4DBE7; outline-offset:1px; }
+  .unit-toggle{
+    display:flex;
+    flex:none;
+    gap:2px;
+    margin-right:6px;
+  }
+  .unit-btn{
+    border:none;
+    background:transparent;
+    padding:7px 10px;
+    font-family:'DM Sans', sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--muted);
+    cursor:pointer;
+    border-radius:1px;
+  }
+  .unit-btn.active{ background:#B4DBE7; color:var(--ink); }
 
   /* PHOTO CAPTURE */
   .photo-actions{
@@ -496,6 +549,10 @@
         <div class="field">
           <label>VIN <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
           <input type="text" id="vin-input" placeholder="Enter full VIN">
+          <div class="vin-hint" id="vin-hint">
+            <svg class="ui-icon"><use href="#icon-check"/></svg>
+            <span>Auto-filled from VIN — not right? Edit the fields below.</span>
+          </div>
         </div>
 
         <div class="field">
@@ -540,7 +597,13 @@
 
         <div class="field">
           <label>Estimated Odometer Reading <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <input type="number" placeholder="e.g. 42,300">
+          <div class="suffix-input">
+            <input type="text" inputmode="numeric" id="odometer-input" placeholder="e.g. 42,300" oninput="formatOdometerInput(this)">
+            <div class="unit-toggle">
+              <button type="button" class="unit-btn active" id="unit-mi" onclick="setOdometerUnit('mi')">mi</button>
+              <button type="button" class="unit-btn" id="unit-km" onclick="setOdometerUnit('km')">km</button>
+            </div>
+          </div>
         </div>
 
         <div class="field">
@@ -707,6 +770,36 @@ function formatCurrency(input){
   if(digits === ''){ input.value = ''; return; }
   digits = digits.replace(/^0+(?=\d)/, '');
   input.value = Number(digits).toLocaleString('en-US');
+}
+
+function formatOdometerInput(input){
+  let digits = input.value.replace(/[^0-9]/g, '');
+  if(digits === ''){ input.value = ''; return; }
+  digits = digits.replace(/^0+(?=\d)/, '');
+  input.value = Number(digits).toLocaleString('en-US');
+}
+
+let odometerUnit = 'mi';
+function setOdometerUnit(unit){
+  if(unit === odometerUnit) return;
+  const input = document.getElementById('odometer-input');
+  const miBtn = document.getElementById('unit-mi');
+  const kmBtn = document.getElementById('unit-km');
+  if(input && input.value){
+    const digits = input.value.replace(/[^0-9]/g, '');
+    if(digits !== ''){
+      let num = Number(digits);
+      num = unit === 'km' ? num * 1.60934 : num / 1.60934;
+      input.value = Math.round(num).toLocaleString('en-US');
+    }
+  }
+  odometerUnit = unit;
+  if(miBtn) miBtn.classList.toggle('active', unit === 'mi');
+  if(kmBtn) kmBtn.classList.toggle('active', unit === 'km');
+  if(input){
+    input.placeholder = unit === 'mi' ? 'e.g. 42,300' : 'e.g. 68,100';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 }
 function toggleModelOther(value){
   const input = document.getElementById('model-other-input');
@@ -967,17 +1060,21 @@ function setSelectValueByText(select, text){
 
 (function setupVinDecode(){
   const vinInput = document.getElementById('vin-input');
+  const vinHint = document.getElementById('vin-hint');
   if(!vinInput) return;
   let lastDecoded = '';
   vinInput.addEventListener('input', () => {
     const vin = vinInput.value.trim();
+    if(vin.length < 17 && vinHint) vinHint.classList.remove('show');
     if(vin.length !== 17 || vin === lastDecoded) return;
     lastDecoded = vin;
     const decoded = decodeVIN(vin);
+    let filledSomething = false;
 
     if(decoded.make){
       const makeSelect = document.getElementById('make-select');
       if(setSelectValueByText(makeSelect, decoded.make)){
+        filledSomething = true;
         populateModelOptions(decoded.make);
         const modelSelect = document.getElementById('model-select');
         if(modelSelect && modelSelect.options.length > 1){
@@ -988,8 +1085,10 @@ function setSelectValueByText(select, text){
       }
     }
     if(decoded.year){
-      setSelectValueByText(document.getElementById('year-select'), decoded.year);
+      if(setSelectValueByText(document.getElementById('year-select'), decoded.year)) filledSomething = true;
     }
+
+    if(vinHint) vinHint.classList.toggle('show', filledSomething);
   });
 })();
 </script>
