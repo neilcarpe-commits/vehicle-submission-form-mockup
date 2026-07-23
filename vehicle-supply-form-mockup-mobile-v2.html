@@ -666,24 +666,24 @@
         <h2 class="section-title">Contact Information</h2>
 
         <div id="contact-block">
-          <div class="section-sub">Since you're not logged in, we just need a way to reach you. <span class="tag new">New</span></div>
+          <div class="section-sub" id="contact-sub-text">Since you're not logged in, we just need a way to reach you. <span class="tag new">New</span></div>
           <div class="field">
             <label>First Name <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-            <input type="text" placeholder="Enter your first name">
+            <input type="text" id="contact-first-name" placeholder="Enter your first name">
           </div>
           <div class="field">
             <label>Last Name <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-            <input type="text" placeholder="Enter your last name">
+            <input type="text" id="contact-last-name" placeholder="Enter your last name">
           </div>
           <div class="field">
             <label>Email Address <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-            <input type="email" placeholder="your.email@example.com">
+            <input type="email" id="contact-email" placeholder="your.email@example.com">
           </div>
         </div>
 
         <div class="field">
           <label>Phone Number <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <input type="tel" placeholder="(555) 123-4567">
+          <input type="tel" id="contact-phone" placeholder="(555) 123-4567">
         </div>
         <div class="field">
           <label>How did you hear about us?</label>
@@ -732,8 +732,25 @@
 </div>
 
 <script>
+/* Demo stand-in for the signed-in account's profile info. In the real
+   product this would come from the user's account record. */
+const DEMO_ACCOUNT = {
+  firstName: 'Alex',
+  lastName: 'Morgan',
+  email: 'alex.morgan@example.com',
+  phone: '(415) 555-0142'
+};
+
+function setContactField(id, value){
+  const input = document.getElementById(id);
+  if(!input) return;
+  input.value = value;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 function setMode(mode){
   const contactBlock = document.getElementById('contact-block');
+  const contactSub = document.getElementById('contact-sub-text');
   const banner = document.getElementById('gate-banner');
   const btnAnon = document.getElementById('btn-anon');
   const btnUser = document.getElementById('btn-user');
@@ -742,11 +759,21 @@ function setMode(mode){
     banner.style.display = 'flex';
     btnAnon.classList.add('active');
     btnUser.classList.remove('active');
+    if(contactSub) contactSub.innerHTML = 'Since you\'re not logged in, we just need a way to reach you. <span class="tag new">New</span>';
+    setContactField('contact-first-name', '');
+    setContactField('contact-last-name', '');
+    setContactField('contact-email', '');
+    setContactField('contact-phone', '');
   } else {
-    contactBlock.style.display = 'none';
+    contactBlock.style.display = 'block';
     banner.style.display = 'none';
     btnUser.classList.add('active');
     btnAnon.classList.remove('active');
+    if(contactSub) contactSub.innerHTML = 'We\'ve pre-filled this from your account — please confirm it\'s still correct.';
+    setContactField('contact-first-name', DEMO_ACCOUNT.firstName);
+    setContactField('contact-last-name', DEMO_ACCOUNT.lastName);
+    setContactField('contact-email', DEMO_ACCOUNT.email);
+    setContactField('contact-phone', DEMO_ACCOUNT.phone);
   }
 }
 function showModal(){ document.getElementById('overlay').classList.add('show'); }
