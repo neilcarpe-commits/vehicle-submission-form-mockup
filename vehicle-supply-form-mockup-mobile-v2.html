@@ -131,6 +131,9 @@
     font-weight:600;
     font-size:19px;
     letter-spacing:-0.01em;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
     position:sticky;
     top:44px;
     z-index:4;
@@ -141,6 +144,25 @@
     backdrop-filter:blur(6px);
     -webkit-backdrop-filter:blur(6px);
     color:#fff;
+  }
+  .page-title .title-icon{
+    display:none;
+    align-items:center;
+  }
+  .page-title .title-icon svg{
+    width:30px;
+    height:30px;
+    display:block;
+    opacity:0.55;
+  }
+  h1.page-title.collapsed .title-text{ display:none; }
+  h1.page-title.collapsed .title-icon{ display:inline-flex; }
+  h1.page-title{ transition:background .2s ease, padding .2s ease; }
+  h1.page-title.collapsed{
+    padding:20px 18px;
+    background:rgba(218,219,213,0.72);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
   }
   .subtitle{
     color:rgba(255,255,255,0.65);
@@ -443,6 +465,10 @@
   <symbol id="icon-check-thick" viewBox="0 0 256 256">
     <path d="M50 130 L104 184 L206 66" fill="none" stroke="#B4DBE7" stroke-width="44" stroke-linecap="square" stroke-linejoin="miter"/>
   </symbol>
+  <symbol id="brand-badge" viewBox="0 0 202.92 202.92">
+    <path fill="#4A4A4A" d="M101.46,8c51.53,0,93.46,41.93,93.46,93.46s-41.93,93.46-93.46,93.46S8,153,8,101.46,49.93,8,101.46,8M101.46,0C45.43,0,0,45.43,0,101.46s45.43,101.46,101.46,101.46,101.46-45.43,101.46-101.46S157.5,0,101.46,0h0Z"/>
+    <path fill="#4A4A4A" d="M179.59,92.91l-.49-2.21c-2-8.95-4.84-17.69-8.48-26.11l-.9-2.08c-.99-3.06-4.63-4.33-7.31-2.55l-47.6,31.47c-3.99,2.64-9.12-1.09-7.84-5.7l15.3-55.27c.86-3.1-1.47-6.16-4.69-6.16l-2.26-.21c-9.13-.86-18.32-.86-27.45,0l-2.26.21c-3.21,0-5.55,3.06-4.69,6.16l15.33,55.39c1.28,4.61-3.85,8.34-7.84,5.7l-47.79-31.6c-2.68-1.77-6.32-.5-7.31,2.55l-.89,2.05c-3.65,8.42-6.49,17.18-8.49,26.13l-.49,2.21c-.99,3.06,1.2,6.22,4.41,6.36l57.37,2.53c4.78.21,6.74,6.24,3,9.22l-45.34,36.1c-2.51,2-2.43,5.85.17,7.74l1.7,1.5c6.88,6.06,14.31,11.47,22.21,16.13l1.95,1.15c2.6,1.89,6.29.78,7.41-2.23l20.41-54.51c1.68-4.48,8.01-4.48,9.69,0l20.41,54.51c1.13,3.01,4.81,4.12,7.41,2.23l1.96-1.16c7.89-4.67,15.33-10.07,22.2-16.13l1.7-1.5c2.6-1.89,2.69-5.74.17-7.74l-45.35-36.11c-3.74-2.98-1.78-9.01,3-9.22l57.26-2.53c3.21-.14,5.4-3.31,4.41-6.36ZM101.51,102.05v.02s0,0,0,0h0Z"/>
+  </symbol>
   <symbol id="pcarmarket-logo" viewBox="0 0 570.76 348.28">
     <rect fill="#fff" y="217.1" width="570.76" height="131.19"/>
     <rect fill="#fff" width="570.76" height="194.09"/>
@@ -466,7 +492,10 @@
     <div class="statusbar"><span>9:41</span><span>●●●●&nbsp; 5G &nbsp;🔋</span></div>
 
     <div class="content">
-      <h1 class="page-title">Submit Your Vehicle</h1>
+      <h1 class="page-title">
+        <span class="title-text">Submit Your Vehicle</span>
+        <span class="title-icon"><svg viewBox="0 0 202.92 202.92"><use href="#brand-badge"/></svg></span>
+      </h1>
       <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
 
       <h2 class="section-title">Vehicle Information</h2>
@@ -860,6 +889,20 @@ function setupRequiredChecks(){
   });
 }
 setupRequiredChecks();
+
+(function setupHeaderCollapse(){
+  const header = document.querySelector('h1.page-title');
+  const subtitle = document.querySelector('.subtitle');
+  const scrollArea = document.getElementById('scroll-area');
+  if(!header || !subtitle || !scrollArea) return;
+  const headerHeight = header.getBoundingClientRect().height;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      header.classList.toggle('collapsed', !entry.isIntersecting);
+    });
+  }, { root: scrollArea, rootMargin: `-${Math.round(headerHeight)}px 0px 0px 0px`, threshold: 0 });
+  observer.observe(subtitle);
+})();
 </script>
 
 </body>
