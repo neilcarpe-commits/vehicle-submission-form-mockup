@@ -150,12 +150,13 @@
     top:44px;
     z-index:4;
     margin:0 -18px 0;
-    padding:14px 18px;
+    padding:14px 18px 4px;
     text-transform:uppercase;
     background:#000;
     color:#fff;
   }
   .page-title .title-text{ display:block; }
+  .page-title.scrolled{ padding-bottom:16px; }
   .page-title.scrolled .title-text{ display:none; }
   .progress-label{
     display:none;
@@ -209,7 +210,7 @@
     color:rgba(255,255,255,0.65);
     font-size:12.5px;
     margin:0 -18px 0;
-    padding:14px 18px 36px;
+    padding:4px 18px 36px;
     background:#000;
     line-height:1.4;
   }
@@ -1181,6 +1182,15 @@ const FORM_STEPS = [
     const pct = maxScroll > 0 ? Math.min(100, Math.max(0, (scrollArea.scrollTop / maxScroll) * 100)) : 0;
     fill.style.width = pct + '%';
 
+    // Before the user starts scrolling, the header shows "Submit Your
+    // Vehicle"; once they scroll at all, it swaps to the numbered section
+    // indicator instead. Toggle this first since it changes the header's
+    // height (and therefore where the docked bar needs to sit).
+    const wasScrolled = header.classList.contains('scrolled');
+    const isScrolled = scrollArea.scrollTop > 0;
+    header.classList.toggle('scrolled', isScrolled);
+    if(isScrolled !== wasScrolled) updateDockTop();
+
     const headerBottom = header.getBoundingClientRect().bottom;
     let activeIndex = 0;
     steps.forEach((step, i) => {
@@ -1188,11 +1198,6 @@ const FORM_STEPS = [
     });
     progressNum.textContent = activeIndex + 1;
     progressText.textContent = steps[activeIndex].label;
-
-    // Before the user starts scrolling, the header shows "Submit Your
-    // Vehicle"; once they scroll at all, it swaps to the numbered section
-    // indicator instead.
-    header.classList.toggle('scrolled', scrollArea.scrollTop > 0);
 
     // Dock the bar onto the header once the "Fields marked..." box has
     // scrolled out from under the sticky header; undock (return it to sitting
