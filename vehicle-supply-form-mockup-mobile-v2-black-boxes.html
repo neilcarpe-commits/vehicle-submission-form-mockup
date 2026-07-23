@@ -129,8 +129,8 @@
   h1.page-title{
     font-family:'DM Sans', sans-serif;
     font-weight:600;
-    font-size:19px;
-    letter-spacing:-0.01em;
+    font-size:15px;
+    letter-spacing:0.02em;
     display:flex;
     align-items:center;
     justify-content:flex-start;
@@ -138,31 +138,12 @@
     top:44px;
     z-index:4;
     margin:0 -18px 0;
-    padding:64px 18px 14px;
+    padding:14px 18px;
     text-transform:uppercase;
-    background:linear-gradient(rgba(218,219,213,0.55) 0, rgba(218,219,213,0.55) 24px, rgba(0,0,0,0.94) 24px, rgba(0,0,0,0.94) 100%);
+    background:rgba(0,0,0,0.75);
     backdrop-filter:blur(6px);
     -webkit-backdrop-filter:blur(6px);
     color:#fff;
-  }
-  .page-title .title-icon{
-    display:none;
-    align-items:center;
-  }
-  .page-title .title-icon svg{
-    width:30px;
-    height:30px;
-    display:block;
-    opacity:0.55;
-  }
-  h1.page-title.collapsed .title-text{ display:none; }
-  h1.page-title.collapsed .title-icon{ display:inline-flex; }
-  h1.page-title{ transition:background .2s ease, padding .2s ease; }
-  h1.page-title.collapsed{
-    padding:20px 18px;
-    background:rgba(218,219,213,0.72);
-    backdrop-filter:blur(6px);
-    -webkit-backdrop-filter:blur(6px);
   }
   .subtitle{
     color:rgba(255,255,255,0.65);
@@ -495,7 +476,6 @@
     <div class="content">
       <h1 class="page-title">
         <span class="title-text">Submit Your Vehicle</span>
-        <span class="title-icon"><svg viewBox="0 0 202.92 202.92"><use href="#brand-badge"/></svg></span>
       </h1>
       <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
 
@@ -890,20 +870,6 @@ function setupRequiredChecks(){
   });
 }
 setupRequiredChecks();
-
-(function setupHeaderCollapse(){
-  const header = document.querySelector('h1.page-title');
-  const subtitle = document.querySelector('.subtitle');
-  const scrollArea = document.getElementById('scroll-area');
-  if(!header || !subtitle || !scrollArea) return;
-  const headerHeight = header.getBoundingClientRect().height;
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      header.classList.toggle('collapsed', !entry.isIntersecting);
-    });
-  }, { root: scrollArea, rootMargin: `-${Math.round(headerHeight)}px 0px 0px 0px`, threshold: 0 });
-  observer.observe(subtitle);
-})();
 </script>
 
 </body>
