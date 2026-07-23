@@ -135,7 +135,7 @@
     top:44px;
     z-index:4;
     margin:0 -18px 0;
-    padding:14px 18px 17px;
+    padding:14px 18px;
     text-transform:uppercase;
     background:#000;
     color:#fff;
@@ -150,10 +150,21 @@
     text-transform:none;
     color:rgba(255,255,255,0.55);
   }
+  /* Slim progress bar: rendered in normal flow just under the "Fields
+     marked..." box until that box scrolls out from under the sticky header,
+     at which point it docks onto the header's bottom edge (its original spot). */
+  .form-progress-wrap{
+    margin:0 -18px;
+    z-index:4;
+  }
+  .form-progress-wrap.docked{
+    position:sticky;
+  }
   .form-progress-track{
-    position:absolute;
-    left:0; right:0; bottom:0;
     height:6px;
+    background:rgba(18,32,26,0.12);
+  }
+  .form-progress-wrap.docked .form-progress-track{
     background:rgba(255,255,255,0.15);
   }
   .form-progress-fill{
@@ -546,9 +557,11 @@
       <h1 class="page-title">
         <span class="title-text">Submit Your Vehicle</span>
         <span class="progress-label" id="progress-label">Step 1 of 6 — Vehicle Information</span>
-        <div class="form-progress-track"><div class="form-progress-fill" id="form-progress-fill"></div></div>
       </h1>
       <div class="subtitle">Fields marked <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span> are required. Everything else helps us list faster, but won't hold up your submission.</div>
+      <div class="form-progress-wrap" id="form-progress-wrap">
+        <div class="form-progress-track"><div class="form-progress-fill" id="form-progress-fill"></div></div>
+      </div>
 
       <h2 class="section-title" id="step-vehicle-info">Vehicle Information</h2>
 
@@ -1031,12 +1044,24 @@ const FORM_STEPS = [
   const fill = document.getElementById('form-progress-fill');
   const label = document.getElementById('progress-label');
   const header = document.querySelector('h1.page-title');
-  if(!scrollArea || !fill || !label || !header) return;
+  const subtitle = document.querySelector('.subtitle');
+  const progressWrap = document.getElementById('form-progress-wrap');
+  if(!scrollArea || !fill || !label || !header || !subtitle || !progressWrap) return;
 
   const steps = FORM_STEPS
     .map(s => ({ ...s, el: document.getElementById(s.id) }))
     .filter(s => s.el);
   if(!steps.length) return;
+
+  function updateDockTop(){
+    // The header sticks at top:44px (the status bar's height). Once docked,
+    // the progress bar should sit flush against the header's bottom edge —
+    // i.e. stick at 44px plus however tall the header currently is.
+    const headerTop = parseFloat(getComputedStyle(header).top) || 44;
+    progressWrap.style.top = (headerTop + header.getBoundingClientRect().height) + 'px';
+  }
+  updateDockTop();
+  window.addEventListener('resize', updateDockTop);
 
   let ticking = false;
   function update(){
@@ -1052,6 +1077,12 @@ const FORM_STEPS = [
       if(step.el.getBoundingClientRect().top <= headerBottom + 20) activeIndex = i;
     });
     label.textContent = `Step ${activeIndex + 1} of ${steps.length} — ${steps[activeIndex].label}`;
+
+    // Dock the bar onto the header once the "Fields marked..." box has
+    // scrolled out from under the sticky header; undock (return it to sitting
+    // right below that box) once it scrolls back into view.
+    const subtitleBottom = subtitle.getBoundingClientRect().bottom;
+    progressWrap.classList.toggle('docked', subtitleBottom <= headerBottom);
   }
 
   scrollArea.addEventListener('scroll', () => {
