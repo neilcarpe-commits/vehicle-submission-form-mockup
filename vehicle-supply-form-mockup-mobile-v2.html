@@ -159,7 +159,7 @@
   .progress-label{
     display:block;
     margin-top:4px;
-    font-size:10px;
+    font-size:13px;
     font-weight:500;
     letter-spacing:0.03em;
     text-transform:none;
@@ -496,7 +496,7 @@
   }
   .overlay.show{ display:flex; }
   .sheet{
-    background:#fff;
+    background:#000;
     border-radius:1px;
     width:100%;
     max-width:420px;
@@ -504,18 +504,21 @@
     text-align:center;
   }
   .sheet .check{
-    width:44px; height:44px; border-radius:50%;
-    background:var(--green-dim); display:flex; align-items:center; justify-content:center;
-    margin:0 auto 16px; color:var(--green); font-size:20px;
+    width:60px; height:60px;
+    margin:0 auto 16px;
   }
-  .sheet h3{ font-family:'DM Sans', sans-serif; font-weight:700; font-size:19px; margin:0 0 8px; text-transform:uppercase; }
-  .sheet p{ font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 20px; }
+  .sheet .check svg{ width:100%; height:100%; display:block; }
+  .sheet h3{ font-family:'DM Sans', sans-serif; font-weight:700; font-size:19px; letter-spacing:0.02em; margin:0 0 8px; text-transform:uppercase; color:#fff; }
+  .sheet p{ font-size:13px; color:rgba(255,255,255,0.65); line-height:1.5; margin:0 0 20px; }
   .sheet button{
-    width:100%; padding:14px; border-radius:1px; font-size:12px; font-weight:600;
+    width:100%; padding:16px; border-radius:1px; font-size:13px; font-weight:600;
     border:none; cursor:pointer; margin-bottom:9px; text-transform:uppercase; letter-spacing:0.08em;
+    font-family:'DM Sans', sans-serif;
   }
-  .sheet .primary{ background:var(--green); color:#fff; }
-  .sheet .secondary{ background:transparent; color:var(--muted); border:1px solid var(--line-strong); }
+  .sheet .primary{ background:#B4DBE7; color:var(--ink); }
+  .sheet .primary:hover{ background:#fff; color:var(--ink); }
+  .sheet .secondary{ background:#EEEFEB; color:var(--ink); border:none; }
+  .sheet .secondary:hover{ background:#fff; color:var(--ink); }
 </style>
 </head>
 <body>
@@ -541,6 +544,11 @@
   </symbol>
   <symbol id="icon-check-thick" viewBox="0 0 256 256">
     <path d="M50 130 L104 184 L206 66" fill="none" stroke="#B4DBE7" stroke-width="44" stroke-linecap="square" stroke-linejoin="miter"/>
+  </symbol>
+  <symbol id="icon-check-badge" viewBox="0 0 720 720">
+    <circle fill="none" stroke="#fff" stroke-miterlimit="10" stroke-width="34" cx="360" cy="360" r="338.81"/>
+    <circle fill="#fff" cx="360" cy="360" r="264.09"/>
+    <polygon points="312.83 473.5 207.61 368.38 248.42 327.41 311.17 389.33 451.05 237.48 493.87 276.78 312.83 473.5"/>
   </symbol>
   <symbol id="brand-badge" viewBox="0 0 202.92 202.92">
     <path fill="#4A4A4A" d="M101.46,8c51.53,0,93.46,41.93,93.46,93.46s-41.93,93.46-93.46,93.46S8,153,8,101.46,49.93,8,101.46,8M101.46,0C45.43,0,0,45.43,0,101.46s45.43,101.46,101.46,101.46,101.46-45.43,101.46-101.46S157.5,0,101.46,0h0Z"/>
@@ -778,7 +786,7 @@
 
 <div class="overlay" id="overlay">
   <div class="sheet">
-    <div class="check">✓</div>
+    <div class="check"><svg><use href="#icon-check-badge"/></svg></div>
     <h3>Submission received</h3>
     <p>We'll be in touch shortly. Want to save your details and track this submission?</p>
     <button class="primary" onclick="closeModal()">Create an account</button>
