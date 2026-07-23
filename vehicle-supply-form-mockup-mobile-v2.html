@@ -502,7 +502,25 @@
     max-width:420px;
     padding:28px 24px 34px;
     text-align:center;
+    position:relative;
   }
+  .sheet .close-x{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:26px;
+    height:26px;
+    border:none;
+    background:transparent;
+    color:#4A4A4A;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+  }
+  .sheet .close-x svg{ width:14px; height:14px; fill:currentColor; }
+  .sheet .close-x:hover{ color:#8a8f7e; }
   .sheet .check{
     width:60px; height:60px;
     margin:0 auto 16px;
@@ -544,6 +562,9 @@
   </symbol>
   <symbol id="icon-check-thick" viewBox="0 0 256 256">
     <path d="M50 130 L104 184 L206 66" fill="none" stroke="#B4DBE7" stroke-width="44" stroke-linecap="square" stroke-linejoin="miter"/>
+  </symbol>
+  <symbol id="icon-x" viewBox="0 0 256 256">
+    <path d="M60 60 L196 196 M196 60 L60 196" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round"/>
   </symbol>
   <symbol id="icon-check-badge" viewBox="0 0 720 720">
     <circle fill="none" stroke="#fff" stroke-miterlimit="10" stroke-width="34" cx="360" cy="360" r="338.81"/>
@@ -786,6 +807,9 @@
 
 <div class="overlay" id="overlay">
   <div class="sheet">
+    <button type="button" class="close-x" onclick="closeModal()" aria-label="Close">
+      <svg><use href="#icon-x"/></svg>
+    </button>
     <div class="check"><svg><use href="#icon-check-badge"/></svg></div>
     <h3>Submission received</h3>
     <p>We'll be in touch shortly. Want to save your details and track this submission?</p>
