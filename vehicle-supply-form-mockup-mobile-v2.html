@@ -733,7 +733,7 @@
               <input type="file" accept="image/*" capture="environment" id="vin-scan-input" onchange="handleVinScan(this.files); this.value='';">
             </label>
           </div>
-          <div class="help">Can't find it? Snap a photo of the VIN plate or door sticker and we'll read it for you.</div>
+          <div class="help" id="vin-scan-help" style="width:calc(100% - 54px);">Can't find it? Snap a photo of the VIN plate or door sticker and we'll read it for you.</div>
           <div class="vin-scan-status" id="vin-scan-status">
             <span class="spinner"></span>
             <span>Reading VIN from photo…</span>
@@ -1381,11 +1381,19 @@ function handleVinScan(files){
 (function setupVinDecode(){
   const vinInput = document.getElementById('vin-input');
   const vinHint = document.getElementById('vin-hint');
+  const vinScanHelp = document.getElementById('vin-scan-help');
   if(!vinInput) return;
   let lastDecoded = '';
   vinInput.addEventListener('input', () => {
     const vin = vinInput.value.trim();
-    if(vin.length < 17 && vinHint) vinHint.classList.remove('show');
+    if(vin.length < 17){
+      if(vinHint) vinHint.classList.remove('show');
+      // Only one VIN note shows at a time: the "scan a photo" tip before a
+      // VIN is entered, and the "auto-filled from VIN" confirmation once one
+      // decodes successfully — so they never compete for attention, and both
+      // stay reachable depending on where the user is in the flow.
+      if(vinScanHelp) vinScanHelp.style.display = '';
+    }
     if(vin.length !== 17 || vin === lastDecoded) return;
     lastDecoded = vin;
     const decoded = decodeVIN(vin);
@@ -1409,6 +1417,7 @@ function handleVinScan(files){
     }
 
     if(vinHint) vinHint.classList.toggle('show', filledSomething);
+    if(vinScanHelp) vinScanHelp.style.display = filledSomething ? 'none' : '';
   });
 })();
 
