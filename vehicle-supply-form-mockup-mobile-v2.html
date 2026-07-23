@@ -126,6 +126,21 @@
   }
   .banner b{ color:var(--green); }
 
+  .draft-banner{
+    display:none;
+    gap:10px;
+    align-items:flex-start;
+    padding:12px 13px;
+    border-radius:1px;
+    background:rgba(180, 219, 231, 0.25);
+    margin-bottom:22px;
+    font-size:12.5px;
+    line-height:1.5;
+    color:#233a2c;
+  }
+  .draft-banner.show{ display:flex; }
+  .draft-banner a{ color:var(--green); font-weight:600; }
+
   h1.page-title{
     font-family:'DM Sans', sans-serif;
     font-weight:600;
@@ -565,6 +580,11 @@
 
       <h2 class="section-title" id="step-vehicle-info">Vehicle Information</h2>
 
+      <div class="draft-banner" id="draft-banner">
+        <svg class="ui-icon"><use href="#icon-check"/></svg>
+        <span>We restored your in-progress draft from this device. <a href="#" id="discard-draft-link">Discard and start over</a></span>
+      </div>
+
       <span class="toolbar-label">Demo view</span>
       <div class="toolbar">
         <div class="toggle">
@@ -641,7 +661,7 @@
 
         <div class="field">
           <label>Description</label>
-          <textarea placeholder="Describe the vehicle's condition, notable features, history, and any modifications…"></textarea>
+          <textarea id="description-textarea" placeholder="Describe the vehicle's condition, notable features, history, and any modifications…"></textarea>
         </div>
       </section>
 
@@ -676,11 +696,11 @@
         <h2 class="section-title" id="step-location">Location</h2>
         <div class="field">
           <label>ZIP Code <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></label>
-          <input type="text" placeholder="Enter ZIP code">
+          <input type="text" id="zip-input" placeholder="Enter ZIP code">
         </div>
         <div class="field">
           <label>Country</label>
-          <select><option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahamas</option><option>Bahrain</option><option>Bangladesh</option><option>Barbados</option><option>Belarus</option><option>Belgium</option><option>Belize</option><option>Benin</option><option>Bhutan</option><option>Bolivia</option><option>Bosnia and Herzegovina</option><option>Botswana</option><option>Brazil</option><option>Brunei</option><option>Bulgaria</option><option>Burkina Faso</option><option>Burundi</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Cape Verde</option><option>Central African Republic</option><option>Chad</option><option>Chile</option><option>China</option><option>Colombia</option><option>Comoros</option><option>Congo</option><option>Costa Rica</option><option>Croatia</option><option>Cuba</option><option>Cyprus</option><option>Czech Republic</option><option>Denmark</option><option>Djibouti</option><option>Dominica</option><option>Dominican Republic</option><option>Ecuador</option><option>Egypt</option><option>El Salvador</option><option>Equatorial Guinea</option><option>Eritrea</option><option>Estonia</option><option>Eswatini</option><option>Ethiopia</option><option>Fiji</option><option>Finland</option><option>France</option><option>Gabon</option><option>Gambia</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Grenada</option><option>Guatemala</option><option>Guinea</option><option>Guinea-Bissau</option><option>Guyana</option><option>Haiti</option><option>Honduras</option><option>Hungary</option><option>Iceland</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Jamaica</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kenya</option><option>Kiribati</option><option>Kosovo</option><option>Kuwait</option><option>Kyrgyzstan</option><option>Laos</option><option>Latvia</option><option>Lebanon</option><option>Lesotho</option><option>Liberia</option><option>Libya</option><option>Liechtenstein</option><option>Lithuania</option><option>Luxembourg</option><option>Madagascar</option><option>Malawi</option><option>Malaysia</option><option>Maldives</option><option>Mali</option><option>Malta</option><option>Marshall Islands</option><option>Mauritania</option><option>Mauritius</option><option>Mexico</option><option>Micronesia</option><option>Moldova</option><option>Monaco</option><option>Mongolia</option><option>Montenegro</option><option>Morocco</option><option>Mozambique</option><option>Myanmar</option><option>Namibia</option><option>Nauru</option><option>Nepal</option><option>Netherlands</option><option>New Zealand</option><option>Nicaragua</option><option>Niger</option><option>Nigeria</option><option>North Korea</option><option>North Macedonia</option><option>Norway</option><option>Oman</option><option>Pakistan</option><option>Palau</option><option>Palestine</option><option>Panama</option><option>Papua New Guinea</option><option>Paraguay</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Qatar</option><option>Romania</option><option>Russia</option><option>Rwanda</option><option>Saint Kitts and Nevis</option><option>Saint Lucia</option><option>Saint Vincent and the Grenadines</option><option>Samoa</option><option>San Marino</option><option>Sao Tome and Principe</option><option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option><option>Seychelles</option><option>Sierra Leone</option><option>Singapore</option><option>Slovakia</option><option>Slovenia</option><option>Solomon Islands</option><option>Somalia</option><option>South Africa</option><option>South Korea</option><option>South Sudan</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Suriname</option><option>Sweden</option><option>Switzerland</option><option>Syria</option><option>Taiwan</option><option>Tajikistan</option><option>Tanzania</option><option>Thailand</option><option>Timor-Leste</option><option>Togo</option><option>Tonga</option><option>Trinidad and Tobago</option><option>Tunisia</option><option>Turkey</option><option>Turkmenistan</option><option>Tuvalu</option><option>Uganda</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option selected>United States</option><option>Uruguay</option><option>Uzbekistan</option><option>Vanuatu</option><option>Vatican City</option><option>Venezuela</option><option>Vietnam</option><option>Yemen</option><option>Zambia</option><option>Zimbabwe</option></select>
+          <select id="country-select"><option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahamas</option><option>Bahrain</option><option>Bangladesh</option><option>Barbados</option><option>Belarus</option><option>Belgium</option><option>Belize</option><option>Benin</option><option>Bhutan</option><option>Bolivia</option><option>Bosnia and Herzegovina</option><option>Botswana</option><option>Brazil</option><option>Brunei</option><option>Bulgaria</option><option>Burkina Faso</option><option>Burundi</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Cape Verde</option><option>Central African Republic</option><option>Chad</option><option>Chile</option><option>China</option><option>Colombia</option><option>Comoros</option><option>Congo</option><option>Costa Rica</option><option>Croatia</option><option>Cuba</option><option>Cyprus</option><option>Czech Republic</option><option>Denmark</option><option>Djibouti</option><option>Dominica</option><option>Dominican Republic</option><option>Ecuador</option><option>Egypt</option><option>El Salvador</option><option>Equatorial Guinea</option><option>Eritrea</option><option>Estonia</option><option>Eswatini</option><option>Ethiopia</option><option>Fiji</option><option>Finland</option><option>France</option><option>Gabon</option><option>Gambia</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Grenada</option><option>Guatemala</option><option>Guinea</option><option>Guinea-Bissau</option><option>Guyana</option><option>Haiti</option><option>Honduras</option><option>Hungary</option><option>Iceland</option><option>India</option><option>Indonesia</option><option>Iran</option><option>Iraq</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Jamaica</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kenya</option><option>Kiribati</option><option>Kosovo</option><option>Kuwait</option><option>Kyrgyzstan</option><option>Laos</option><option>Latvia</option><option>Lebanon</option><option>Lesotho</option><option>Liberia</option><option>Libya</option><option>Liechtenstein</option><option>Lithuania</option><option>Luxembourg</option><option>Madagascar</option><option>Malawi</option><option>Malaysia</option><option>Maldives</option><option>Mali</option><option>Malta</option><option>Marshall Islands</option><option>Mauritania</option><option>Mauritius</option><option>Mexico</option><option>Micronesia</option><option>Moldova</option><option>Monaco</option><option>Mongolia</option><option>Montenegro</option><option>Morocco</option><option>Mozambique</option><option>Myanmar</option><option>Namibia</option><option>Nauru</option><option>Nepal</option><option>Netherlands</option><option>New Zealand</option><option>Nicaragua</option><option>Niger</option><option>Nigeria</option><option>North Korea</option><option>North Macedonia</option><option>Norway</option><option>Oman</option><option>Pakistan</option><option>Palau</option><option>Palestine</option><option>Panama</option><option>Papua New Guinea</option><option>Paraguay</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Qatar</option><option>Romania</option><option>Russia</option><option>Rwanda</option><option>Saint Kitts and Nevis</option><option>Saint Lucia</option><option>Saint Vincent and the Grenadines</option><option>Samoa</option><option>San Marino</option><option>Sao Tome and Principe</option><option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option><option>Seychelles</option><option>Sierra Leone</option><option>Singapore</option><option>Slovakia</option><option>Slovenia</option><option>Solomon Islands</option><option>Somalia</option><option>South Africa</option><option>South Korea</option><option>South Sudan</option><option>Spain</option><option>Sri Lanka</option><option>Sudan</option><option>Suriname</option><option>Sweden</option><option>Switzerland</option><option>Syria</option><option>Taiwan</option><option>Tajikistan</option><option>Tanzania</option><option>Thailand</option><option>Timor-Leste</option><option>Togo</option><option>Tonga</option><option>Trinidad and Tobago</option><option>Tunisia</option><option>Turkey</option><option>Turkmenistan</option><option>Tuvalu</option><option>Uganda</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option selected>United States</option><option>Uruguay</option><option>Uzbekistan</option><option>Vanuatu</option><option>Vatican City</option><option>Venezuela</option><option>Vietnam</option><option>Yemen</option><option>Zambia</option><option>Zimbabwe</option></select>
         </div>
       </section>
 
@@ -690,7 +710,7 @@
           <label>Price Expectation (US$)</label>
           <div class="prefix-input">
             <span class="prefix">$</span>
-            <input type="text" inputmode="numeric" placeholder="0" oninput="formatCurrency(this)">
+            <input type="text" id="price-input" inputmode="numeric" placeholder="0" oninput="formatCurrency(this)">
           </div>
           <div class="help">What price would you like to achieve? Our sales team will discuss reserve strategy with you directly before the auction goes live.</div>
         </div>
@@ -721,7 +741,7 @@
         </div>
         <div class="field">
           <label>How did you hear about us?</label>
-          <select>
+          <select id="hear-about-select">
             <option>Select an option</option>
             <option>Google / web search</option>
             <option>Instagram</option>
@@ -740,11 +760,11 @@
       <section class="block">
         <h2 class="section-title" id="step-consent">Review &amp; Submit</h2>
         <div class="consent-box">
-          <input type="checkbox">
+          <input type="checkbox" id="consent-terms">
           <div class="ctext">I agree to the <a>terms and conditions</a> and the <a>seller agreement</a>. <span class="req"><svg class="req-icon"><use href="#fuchs-mark"/></svg></span></div>
         </div>
         <div class="consent-box">
-          <input type="checkbox">
+          <input type="checkbox" id="consent-emails">
           <div class="ctext">Send me emails about sales, market trends, and new features. <span class="tag new">New</span></div>
         </div>
       </section>
@@ -811,7 +831,7 @@ function setMode(mode){
     setContactField('contact-phone', DEMO_ACCOUNT.phone);
   }
 }
-function showModal(){ document.getElementById('overlay').classList.add('show'); }
+function showModal(){ document.getElementById('overlay').classList.add('show'); if(typeof clearDraft === 'function') clearDraft(); }
 function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
 
 function toggleMakeOther(value){
@@ -1217,6 +1237,132 @@ function setSelectValueByText(select, text){
 
     if(vinHint) vinHint.classList.toggle('show', filledSomething);
   });
+})();
+
+/* DRAFT AUTOSAVE: since there's no login/account, a dropped call or closed
+   tab mid-form would normally lose everything. This mirrors the fields into
+   localStorage on every change and offers to restore them on the next visit
+   — no account needed, and it never touches the photo files themselves. */
+const DRAFT_KEY = 'pcarmarket-vehicle-draft-v1';
+const DRAFT_FIELDS = [
+  { id: 'vin-input', kind: 'value' },
+  { id: 'make-select', kind: 'value' },
+  { id: 'make-other-input', kind: 'value' },
+  { id: 'year-select', kind: 'value' },
+  { id: 'year-other-input', kind: 'value' },
+  { id: 'model-select', kind: 'value' },
+  { id: 'model-other-input', kind: 'value' },
+  { id: 'odometer-input', kind: 'value' },
+  { id: 'description-textarea', kind: 'value' },
+  { id: 'zip-input', kind: 'value' },
+  { id: 'country-select', kind: 'value' },
+  { id: 'price-input', kind: 'value' },
+  { id: 'contact-first-name', kind: 'value' },
+  { id: 'contact-last-name', kind: 'value' },
+  { id: 'contact-email', kind: 'value' },
+  { id: 'contact-phone', kind: 'value' },
+  { id: 'hear-about-select', kind: 'value' },
+  { id: 'consent-terms', kind: 'checked' },
+  { id: 'consent-emails', kind: 'checked' }
+];
+
+function saveDraft(){
+  const draft = {};
+  DRAFT_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if(!el) return;
+    draft[f.id] = f.kind === 'checked' ? el.checked : el.value;
+  });
+  draft.odometerUnit = odometerUnit;
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); }catch(e){}
+}
+
+function clearDraft(){
+  try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
+}
+
+let draftSaveTimer = null;
+function scheduleDraftSave(){
+  clearTimeout(draftSaveTimer);
+  draftSaveTimer = setTimeout(saveDraft, 400);
+}
+
+function hasAnyDraftValue(draft){
+  return DRAFT_FIELDS.some(f => {
+    const v = draft[f.id];
+    return f.kind === 'checked' ? v === true : !!(v && String(v).trim() !== '');
+  });
+}
+
+function restoreDraft(){
+  let draft;
+  try{ draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); }catch(e){ draft = null; }
+  if(!draft || !hasAnyDraftValue(draft)) return false;
+
+  // Make first, since it repopulates the Model dropdown's option list.
+  const makeSelect = document.getElementById('make-select');
+  if(makeSelect && draft['make-select']){
+    makeSelect.value = draft['make-select'];
+    if(makeSelect._refreshCustomOptions) makeSelect._refreshCustomOptions();
+    populateModelOptions(draft['make-select']);
+  }
+
+  DRAFT_FIELDS.forEach(f => {
+    if(f.id === 'make-select') return;
+    const el = document.getElementById(f.id);
+    if(!el || draft[f.id] === undefined) return;
+    if(f.kind === 'checked'){
+      el.checked = draft[f.id];
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    } else {
+      if(draft[f.id] === '') return;
+      el.value = draft[f.id];
+      if(el._refreshCustomOptions) el._refreshCustomOptions();
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
+  // Reveal any "Other — please specify" free-text inputs left open in the draft.
+  [['make-select','make-other-input'], ['year-select','year-other-input'], ['model-select','model-other-input']].forEach(([selectId, inputId]) => {
+    const select = document.getElementById(selectId);
+    const input = document.getElementById(inputId);
+    if(select && input && select.value === 'other') input.style.display = 'block';
+  });
+
+  if(draft.odometerUnit && draft.odometerUnit !== odometerUnit){
+    odometerUnit = draft.odometerUnit;
+    const miBtn = document.getElementById('unit-mi');
+    const kmBtn = document.getElementById('unit-km');
+    if(miBtn) miBtn.classList.toggle('active', odometerUnit === 'mi');
+    if(kmBtn) kmBtn.classList.toggle('active', odometerUnit === 'km');
+    const odoInput = document.getElementById('odometer-input');
+    if(odoInput) odoInput.placeholder = odometerUnit === 'mi' ? 'e.g. 42,300' : 'e.g. 68,100';
+  }
+
+  return true;
+}
+
+(function setupDraftAutosave(){
+  DRAFT_FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if(!el) return;
+    el.addEventListener('input', scheduleDraftSave);
+    el.addEventListener('change', scheduleDraftSave);
+  });
+
+  const restored = restoreDraft();
+  const draftBanner = document.getElementById('draft-banner');
+  if(restored && draftBanner) draftBanner.classList.add('show');
+
+  const discardLink = document.getElementById('discard-draft-link');
+  if(discardLink){
+    discardLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      clearDraft();
+      location.reload();
+    });
+  }
 })();
 </script>
 
