@@ -98,7 +98,7 @@
     justify-content:center;
     gap:6px;
     border:none;
-    background:#4A4A4A;
+    background:#B8B8B8;
     padding:14px 10px;
     font-family:'DM Sans', sans-serif;
     font-size:11px;
@@ -316,6 +316,8 @@
     animation:vin-scan-spin .7s linear infinite;
   }
   @keyframes vin-scan-spin{ to{ transform:rotate(360deg); } }
+  .vin-scan-status.error{ color:var(--required); }
+  .vin-scan-status.error .spinner{ display:none; }
 
   input[type=text], input[type=tel], input[type=email], input[type=number], select, textarea{
     width:100%;
@@ -751,8 +753,8 @@
           </div>
           <div class="help" id="vin-scan-help" style="width:calc(100% - 54px);">Can't find it? Snap a photo of the VIN plate or door sticker and we'll read it for you.</div>
           <div class="vin-scan-status" id="vin-scan-status">
-            <span class="spinner"></span>
-            <span>Reading VIN from photo…</span>
+            <span class="spinner" id="vin-scan-spinner"></span>
+            <span id="vin-scan-status-text">Reading VIN from photo…</span>
           </div>
           <div class="vin-hint" id="vin-hint">
             <svg class="ui-icon"><use href="#icon-check"/></svg>
@@ -941,6 +943,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 /* Demo stand-in for the signed-in account's profile info. In the real
    product this would come from the user's account record. */
@@ -1372,26 +1375,58 @@ function setSelectValueByText(select, text){
   return true;
 }
 
-/* VIN photo scan: this is a mockup stand-in for on-device OCR. Selecting a
-   photo (via the camera or library) simulates a brief "reading" delay, then
-   fills the VIN field with a sample VIN and dispatches the same input event
-   the decode pipeline above already listens for, so make/year/model still
-   populate exactly as if the VIN had been typed. */
-const VIN_SCAN_SAMPLES = ['WP0AA2A9XKS123456','WBA3B1C50FK123456','1G1YY26U785123456'];
-let vinScanTimer = null;
-function handleVinScan(files){
-  if(!files || !files.length) return;
-  const vinInput = document.getElementById('vin-input');
+/* VIN photo scan: real client-side OCR via Tesseract.js (no backend, no API
+   key — everything runs in the browser). We read whatever text the engine
+   finds in the photo, strip anything that isn't a valid VIN character
+   (VINs never use I, O, or Q, to avoid confusion with 1 and 0), and look for
+   a 17-character run. A photo of a printed/stamped VIN plate or door
+   sticker works; accuracy depends on focus, lighting and angle like any
+   OCR — this isn't a barcode scanner, so there's no barcode requirement. */
+const VIN_CHAR_RUN = /[A-HJ-NPR-Z0-9]{17}/;
+let vinScanRunning = false;
+
+function setVinScanStatus(text, isError){
   const status = document.getElementById('vin-scan-status');
+  const statusText = document.getElementById('vin-scan-status-text');
+  if(statusText) statusText.textContent = text;
+  if(status){
+    status.classList.toggle('show', !!text);
+    status.classList.toggle('error', !!isError);
+  }
+}
+
+async function handleVinScan(files){
+  if(!files || !files.length || vinScanRunning) return;
+  const file = files[0];
+  const vinInput = document.getElementById('vin-input');
   if(!vinInput) return;
-  if(status) status.classList.add('show');
-  clearTimeout(vinScanTimer);
-  vinScanTimer = setTimeout(() => {
-    const scanned = VIN_SCAN_SAMPLES[Math.floor(Math.random() * VIN_SCAN_SAMPLES.length)];
-    vinInput.value = scanned;
-    vinInput.dispatchEvent(new Event('input', { bubbles: true }));
-    if(status) status.classList.remove('show');
-  }, 900);
+
+  if(typeof Tesseract === 'undefined'){
+    setVinScanStatus("Couldn't load the photo-reader — check your connection and try again, or enter the VIN manually.", true);
+    return;
+  }
+
+  vinScanRunning = true;
+  setVinScanStatus('Reading VIN from photo…', false);
+
+  try{
+    const { data } = await Tesseract.recognize(file, 'eng');
+    const rawText = (data && data.text) ? data.text.toUpperCase() : '';
+    const cleaned = rawText.replace(/[^A-Z0-9]/g, '').replace(/[IOQ]/g, '');
+    const match = cleaned.match(VIN_CHAR_RUN);
+
+    if(match){
+      vinInput.value = match[0];
+      vinInput.dispatchEvent(new Event('input', { bubbles: true }));
+      setVinScanStatus('', false);
+    } else {
+      setVinScanStatus("Couldn't find a clear 17-character VIN in that photo — try a straighter, closer shot, or enter it manually.", true);
+    }
+  } catch(err){
+    setVinScanStatus("Something went wrong reading that photo — try again or enter the VIN manually.", true);
+  } finally {
+    vinScanRunning = false;
+  }
 }
 
 (function setupVinDecode(){
